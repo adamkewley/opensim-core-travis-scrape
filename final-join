@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+
+# Join top-level build information (originally, from `travis show`:
+# contains build times, commit IDs, etc., but aggregated into a single
+# CSV) with low-level test timings (originally, emitted in a build's
+# logs, but aggregated into a single CSV)
+
+import sys
+
+class SubbuildInfo:
+    def __init__(self, *, build_id, commit_id, started, subbuild_id, os):
+        self.build_id = build_id
+        self.commit_id = commit_id
+        self.started = started
+        self.subbuild_id = subbuild_id
+        self.os = os
+
+def parse_subbuild_line(l):
+    build_id, commit_id, started, subbuild_id, os, *rest = l.split(',')
+
+    info = SubbuildInfo(
+        build_id=build_id,
+        commit_id=commit_id,
+        started=started,
+        subbuild_id=subbuild_id,
+        os=os)
+
+    return subbuild_id, info
+
+# returns a dict of { subbuild_id: build_info }
+def read_subbuild_csv(read_io):
+    return {
+        k: build_info
+        for k, build_info
+        in map(parse_subbuild_line, read_io)
+    }
+
+class TestDuration:
+    def __init__(self, *, subbuild_id, test_name, duration):
+        self.subbuild_id = subbuild_id
+        self.test_name = test_name
+        self.duration = duration
+
+def parse_test_durations_line(l):
+    subbuild_id, test_name, duration = l.split(',')
+    info = TestDuration(
+        subbuild_id=subbuild_id,
+        test_name=test_name,
+        duration=duration)
+    return subbuild_id, info
+
+# returns a dict of { subbuild_id: [test_info] }
+def read_test_durations_csv(read_io):
+    ret = {}
+    for line in read_io:
+        subbuild_id, info = parse_test_durations_line(line)
+        tests = ret.get(subbuild_id, [])
+        tests.append(info)
+        ret[subbuild_id] = tests
+    return ret
+
+class JoinedInfo:
+    def __init__(self,
+                 *,
+                 build_id,
+                 commit_id,
+                 started,
+                 subbuild_id,
+                 os,
+                 test_name,
+                 duration):
+        self.build_id = build_id
+        self.commit_id = commit_id
+        self.started = started
+        self.subbuild_id = subbuild_id
+        self.os = os
+        self.test_name = test_name
+        self.duration = duration
+
+# returns an iterable of JoinedInfo
+def inner_join(top_level_info, test_durations):
+    for subbuild_id, info in top_level_info.items():
+        durations = test_durations.get(subbuild_id)
+        if durations is None:
+            continue
+        for duration in durations:
+            yield JoinedInfo(
+                build_id=info.build_id,
+                commit_id=info.commit_id,
+                started=info.started,
+                subbuild_id=subbuild_id,
+                os=info.os,
+                test_name=duration.test_name,
+                duration=duration.duration)
+
+def to_csv(joined):
+    fields = [
+        joined.build_id,
+        joined.subbuild_id,
+        joined.started,
+        joined.commit_id,
+        joined.os,
+        joined.test_name,
+        joined.duration,
+    ]
+    return ','.join(fields)
+
+def main():
+    with open(sys.argv[1], 'rt') as subbuild_fd:
+        top_level_info = read_subbuild_csv(subbuild_fd)
+    with open(sys.argv[2], 'rt') as testdurs_fd:
+        test_durations = read_test_durations_csv(testdurs_fd)
+
+    print("build_id,subbuild_id,started,commit_id,os,test_name,duration")
+    for joined in inner_join(top_level_info, test_durations):
+        print(to_csv(joined).strip())
+
+if __name__ == '__main__':
+    main()

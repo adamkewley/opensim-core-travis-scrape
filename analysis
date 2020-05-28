@@ -1,0 +1,6 @@
+#!/usr/bin/env Rscript
+
+csv = read.csv("final_test_timings.csv")
+csv["date"] = as.Date(csv$started)
+subset = csv[csv$test_name == "testInverseKinematics",]
+plot(subset$date, subset$duration, log='y', cex=0.1)

@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+
+import re
+import sys
+
+os_patt = re.compile("os: ([^ ]+)")
+compiler_patt = re.compile("compiler: ([^ ]+)")
+dur_patt = re.compile("passed: (.+) min")
+
+class BuildLine:
+    def __init__(self, *, build_no, os, duration_mins, compiler):
+        self.build_no = build_no
+        self.os = os
+        self.duration_mins = duration_mins
+        self.compiler = compiler
+
+class ParserOutput:
+    def __init__(self, *, build_id, commit, started, build_lines):
+        self.build_id = build_id
+        self.commit = commit
+        self.started = started
+        self.build_lines = build_lines
+
+def find_or(s, patt, fallback):
+    m = patt.search(s)
+    if m:
+        return m.group(1)
+    else:
+        return fallback
+
+def parse_build_line(l):
+    build_no = l[1:l.index(' ')]
+    prop_str = l[l.index(' '):]
+
+    os = find_or(prop_str, os_patt, "unknown")
+    compiler = find_or(prop_str, compiler_patt, "unknown")
+    duration_mins = find_or(prop_str, dur_patt, "unknown")
+
+    return BuildLine(
+        build_no=build_no,
+        os=os,
+        duration_mins=duration_mins,
+        compiler=compiler)
+
+def format_output(parser_output):
+    ret = ""
+    for bl in parser_output.build_lines:
+        fields = [
+            parser_output.build_id.strip(),
+            parser_output.commit.strip(),
+            parser_output.started.strip(),
+            bl.build_no.strip(),
+            bl.os.strip(),
+            bl.compiler.strip(),
+            bl.duration_mins.strip(),
+        ]
+        ret += f"{','.join(fields)}\n"
+    return ret
+
+def parse(s):
+    lines = s.splitlines()
+    build_id = lines[0][7:lines[0].index(':')]
+    commit = lines[4].split(" ")[-1]
+    started = lines[7][lines[7].index(':')+1:].strip()
+    builds = lines[10:]
+    build_lines = []
+
+    # hack: some of the travis builds are actually "Jobs" with this
+    # header:
+    #
+    # Job #7253.1:  Merge branch 'master' ...
+    #
+    # Those have no sub-builds
+    if "Job" not in lines[0]:
+        for build in builds:
+            build_lines.append(parse_build_line(build))
+
+    return ParserOutput(
+        build_id=build_id,
+        commit=commit,
+        started=started,
+        build_lines=build_lines)
+
+def main():
+    input_txt = sys.stdin.read()
+    output_txt = format_output(parse(input_txt))
+    sys.stdout.write(output_txt)
+
+if __name__ == '__main__':
+    main()
