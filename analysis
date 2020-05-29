@@ -5,11 +5,13 @@ import matplotlib
 
 df = pandas.read_csv("final_test_timings.csv")
 df.started = pandas.to_datetime(df.started, format='%Y-%m-%d %H:%M:%S')
+df.index = df.started
 
 # truncate the data to only plot things after 2017 (because earlier
 # test suites seem to stop abruptly around 2016 (probably test
 # rewrites))
 cutoff = pandas.to_datetime('2017-01-01 01:00:00', format='%Y-%m-%d %H:%M:%S')
+now = pandas.to_datetime('2020-06-01 01:00:00', format='%Y-%m-%d %H:%M:%S')
 outside_cutoff = df.started > cutoff
 df = df[outside_cutoff]
 
@@ -17,17 +19,26 @@ for os, df_g in df.groupby('os'):
     for test_name, df_t in df_g.groupby('test_name'):
         if df_t.size <= 32:
             continue  # only plot a test that actually contains enough datapoints
-        
-        axes = df_t.plot(
-            kind='scatter',
-            x='started',
-            y='duration',
-            title=f"Time taken to run '{test_name}' in {os}",
-            s=0.4,
+
+        df_dur = pandas.DataFrame(df_t.duration, index=df_t.index)
+        df_dur['pm'] = df_dur.index.to_period('M')
+        axes = df_dur.boxplot(
+            by='pm',
+            grid=False,
+            rot=45,
+            fontsize=8,
+
+            notch=True,
+            widths=0.4,
+            meanline=True,
+            sym='.',
         )
+        matplotlib.pyplot.suptitle(f"{test_name}")
+        matplotlib.pyplot.title('')
         matplotlib.pyplot.xlabel('Code committed on')
         matplotlib.pyplot.ylabel('Test duration [mins]')
         matplotlib.pyplot.savefig(
             fname=f'{os}_{test_name}.png'
         )
+#        matplotlib.pyplot.show()
         matplotlib.pyplot.close()
