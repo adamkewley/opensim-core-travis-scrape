@@ -69,7 +69,7 @@ subbuild_test_durations.csv: $(TO_SUBBUILD_LOGS)
 final_test_timings.csv: subbuild.csv subbuild_test_durations.csv
 	./final-join subbuild.csv subbuild_test_durations.csv > $@
 
-.PHONY: ids show subbuild_csvs subbuild_ids subbuild_logs
+.PHONY: ids show subbuild_csvs subbuild_ids subbuild_logs analyze
 
 # explode out the passed build IDs into separate files (for
 # incremental builds)
@@ -86,3 +86,8 @@ subbuild_ids: subbuild.csv | subbuild_ids/
 	cut -d ',' -f 4 subbuild.csv | xargs -I {} touch -a subbuild_ids/{}
 
 subbuild_logs: $(TO_SUBBUILD_LOGS)
+
+analyze:
+	./analysis
+	montage linux_*.png -geometry '1x1+0+0<' out_linux.png
+	montage osx_*.png -geometry '1x1+0+0<' out_osx.png
