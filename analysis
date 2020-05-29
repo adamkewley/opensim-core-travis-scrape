@@ -1,6 +1,21 @@
-#!/usr/bin/env Rscript
+#!/usr/bin/env python3
 
-csv = read.csv("final_test_timings.csv")
-csv["date"] = as.Date(csv$started)
-subset = csv[csv$test_name == "testInverseKinematics",]
-plot(subset$date, subset$duration, log='y', cex=0.1)
+import pandas
+import matplotlib
+
+df = pandas.read_csv("final_test_timings.csv")
+df.started = pandas.to_datetime(df.started, format='%Y-%m-%d %H:%M:%S')
+
+# truncate the data to only plot things after 2017 (because earlier
+# test suites seem to stop abruptly around 2016 (probably test
+# rewrites))
+cutoff = pandas.to_datetime('2017-01-01 01:00:00', format='%Y-%m-%d %H:%M:%S')
+outside_cutoff = df.started > cutoff
+df = df[outside_cutoff]
+
+for os, df_g in df.groupby('os'):
+    for test_name, df_t in df_g.groupby('test_name'):
+        # only plot a test that actually contains enough datapoints
+        if df_t.size > 32:
+            df_t.plot(kind='scatter', x='started', y='duration', title=f"{os}: {test_name}", s=0.4)
+            matplotlib.pyplot.show()
