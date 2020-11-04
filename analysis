@@ -3,7 +3,7 @@
 import pandas
 import matplotlib
 
-df = pandas.read_csv("final_test_timings.csv")
+df = pandas.read_csv("build/final_test_timings.csv")
 df.started = pandas.to_datetime(df.started, format='%Y-%m-%d %H:%M:%S')
 df.index = df.started
 
@@ -38,7 +38,7 @@ for os, df_g in df.groupby('os'):
         matplotlib.pyplot.xlabel('Code committed on')
         matplotlib.pyplot.ylabel('Test duration [mins]')
         matplotlib.pyplot.savefig(
-            fname=f'{os}_{test_name}.png'
+            fname=f'build/individual-plots/{os}_{test_name}.png'
         )
 #        matplotlib.pyplot.show()
         matplotlib.pyplot.close()
