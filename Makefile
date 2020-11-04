@@ -106,3 +106,8 @@ analyze: | build/individual-plots/
 	./analysis  # create individual plots
 	montage build/individual-plots/linux_*.png -geometry '1x1+0+0<' build/out_linux.png
 	montage build/individual-plots/osx_*.png -geometry '1x1+0+0<' build/out_osx.png
+
+# optional step) archive + compress the build directory, so we can
+#                retain the data
+package:
+	tar --transform="s/^build/osim-scrape-results-2020-11-04/" --zstd -vcf osim-scrape-results-2020-11-04.tar.zst build/
