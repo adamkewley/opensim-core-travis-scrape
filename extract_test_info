@@ -20,13 +20,29 @@ def read_tests(log_fd):
             ret.append(Test(name=m.group(1), secs=m.group(2)))
     return ret
 
+def process_log(arg):
+    with open(arg, 'rt') as fd:
+        tests = read_tests(fd)
+    bn = os.path.basename(arg)
+    for test in tests:
+        print(f"{bn},{test.name},{test.secs}")
+
+# caller can provide args in a file, allows caller to circumvent the
+# argument size limit
+def process_argsfile(argsfile):
+    args = []
+    with open(argsfile, 'rt') as fd:
+        for line in fd:
+            args += line.split(' ')
+    for arg in args:
+        process_log(arg.strip())
+
 def main():
-    for el in sys.argv:
-        with open(el, 'rt') as fd:
-            tests = read_tests(fd)
-        bn = os.path.basename(el)
-        for test in tests:
-            print(f"{bn},{test.name},{test.secs}")
+    for arg in sys.argv:
+        if arg.startswith('@'):
+            process_argsfile(arg[1:])
+        else:
+            process_log(arg)
 
 if __name__ == '__main__':
     main()
