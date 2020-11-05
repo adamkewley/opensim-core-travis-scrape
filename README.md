@@ -17,6 +17,17 @@ the measurements, are uploaded here for completeness, rather than
 usefulness.
 
 
+## All Plots
+
+- Linux
+
+![All Linux results](results/linux_all.png)
+
+- OSX
+
+![All OSX results](results/osx_all.png)
+
+
 ## Overview
 
 [opensim-core](https://github.com/opensim-org/opensim-core/) is a
@@ -90,16 +101,43 @@ would be prohibatively expensive).
   - Only tests for which there are >32 timings available are
     plotted. This filters out tests that only have an extremely small
     amount of data (e.g. tests that have not been running for years)
+ 
+ 
+## Discussion
 
-## Results
+- Data yielded from this process was extremely noisy - probably
+  because of the underlying infrastructure (a distributed VM) and
+  might be impacted by parallel test execution (in-VM test thread
+  contention)
+  
+- No particularly meaningful conclusions can be drawn from this
+  dataset. Some test plots seemed to contain interesting trends, but
+  most of these trends are smaller than the noise of the measurement
+  and do not account for hardware changes.
+  
+- The only meaningful performance regression that the analysis
+  identified was in `testDataTable`. This requires further
+  investigation, but it must be noted that actual end-user simulations
+  are not particularly impacted by data table overhead, so it is
+  unlikely that "fixing" this regression (if there is one: it could be
+  test additions) would do much
 
-TODO
+
+## Conclusions
+
+A pipeline was developed for pulling and mining all of
+[opensim-core](https://github.com/opensim-org/opensim-core/)'s travis
+build logs. While this pipeline could be used for other analyses
+(build times, commit frequency, etc.) the primary analysis
+(performance) yields results which are not useful.
 
 
 # Building
 
 This is only necessary if you want to gather the raw + process the
-data yourself.
+data yourself. Because build logs are immutable, processing the data
+from travis *should* result in exactly the same plots. We have backed
+up the raw data + intermediates and can provide them if requested.
 
 Requires:
 
