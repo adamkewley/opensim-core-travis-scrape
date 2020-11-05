@@ -32,18 +32,16 @@ usefulness.
 
 [opensim-core](https://github.com/opensim-org/opensim-core/) is a
 large (>150 kLOC), long-term (>10 year), expert-level, simulation
-codebase with many (>40) contributors from a variety of backgrounds.
-
-Because the project is large, and contributors may be working on
-entirely different subsystems, performance regressions can gradually
-be introduced over time.
+codebase with many (>40) contributors from a variety of
+backgrounds. Because the project is large, and contributors may be
+working on entirely different subsystems, performance regressions can
+gradually be introduced over time.
 
 The aim of this work was to use the data we already have (travis CI
-builds) to identify long-term performance changes in OpenSim.
-
-The main advantage of this approach is that the project already has
-over 15k travis (sub-)builds available online. That is quite a bit of
-data - all of which is from clean (CI) builds of
+builds) to identify long-term performance changes in OpenSim. The main
+advantage of this approach is that the project already has over 15k
+travis (sub-)builds available online. That is quite a bit of data -
+all of which is from clean (CI) builds of
 [opensim-core](https://github.com/opensim-org/opensim-core/). Any
 *large* changes in performance over time should be clearly visible
 from these measurements.
