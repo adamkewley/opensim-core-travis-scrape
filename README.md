@@ -6,13 +6,13 @@ performance measurements from travis.
 
 ## Abstract
 
-This repo contains the source code used to produce [this]() montage
-that aggregates the time it took Travis CI to run some of
-opensim-core's tests. Data from 01-01-2017 to 01-11-2020 was
-aggregated. We concluded that the data mined this way was noisy
-(probably due to travis CI's underyling VM-based infrastructure) and
-that needed a dedicated performance benchmark (which became
-[osimperf](https://github.com/adamkewley/osimperf)) so this repo, and
+This repo contains the source code used to produce
+[this](results/linux_all.png) montage that aggregates the time it took
+Travis CI to run some of opensim-core's tests. Data between 01-01-2017
+and 01-11-2020 was aggregated. We concluded that the data mined this
+way was noisy and that we should develop a dedicated performance
+benchmark (which became
+[osimperf](https://github.com/adamkewley/osimperf)). This repo, and
 the measurements, are uploaded here for completeness, rather than
 usefulness.
 
